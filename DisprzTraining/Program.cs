@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors();
 builder.Services.AddControllers()
 .AddJsonOptions(options =>
 {
@@ -32,6 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseCors(conn=>conn.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000"));
 
 app.MapControllers();
 

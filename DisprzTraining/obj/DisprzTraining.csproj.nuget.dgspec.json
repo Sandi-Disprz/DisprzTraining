@@ -1,29 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Malcom\\ReportBuilder\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj": {}
+    "d:\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj": {}
   },
   "projects": {
-    "D:\\Malcom\\ReportBuilder\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj": {
+    "d:\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Malcom\\ReportBuilder\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj",
+        "projectUniqueName": "d:\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj",
         "projectName": "DisprzTraining",
-        "projectPath": "D:\\Malcom\\ReportBuilder\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj",
-        "packagesPath": "C:\\Users\\Client\\.nuget\\packages\\",
-        "outputPath": "D:\\Malcom\\ReportBuilder\\DisprzTraining\\DisprzTraining\\obj\\",
+        "projectPath": "d:\\DisprzTraining\\DisprzTraining\\DisprzTraining.csproj",
+        "packagesPath": "C:\\Users\\santhoshkumar.s_disp\\.nuget\\packages\\",
+        "outputPath": "d:\\DisprzTraining\\DisprzTraining\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Client\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\santhoshkumar.s_disp\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "https://api.nuget.org/v3/index.json": {},
-          "https://heuristix.pkgs.visualstudio.com/_packaging/DisprzFeed/nuget/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net7.0": {
@@ -41,6 +38,14 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "FluentEmail.Smtp": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            },
+            "MailKit": {
+              "target": "Package",
+              "version": "[3.4.3, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[7.0.0, )"
@@ -52,6 +57,10 @@
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
               "version": "[7.0.0, )"
+            },
+            "MimeKit": {
+              "target": "Package",
+              "version": "[3.4.3, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
