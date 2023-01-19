@@ -11,7 +11,7 @@ namespace DisprzTraining.Data
 
         public static int count=0;
         public static string organizer="sandiashwi@gmail.com";
-        public static string password="wridyqpwvbxajndp";
+        public static string password="cjrjaspnblhftzfv";
         public static string [] formats={"dd-MM-yyyy","yyyy-MM-ddTHH:mm:ss","yyyy-MM-ddTHH:mm","yyyy-MM-ddTHH:mm:ss.mmmZ"};
         public static Dictionary<string,List<Appointment>> meetingData=new Dictionary<string,List<Appointment>>();
         public static Dictionary<string,List<string>> holidays=new Dictionary<string, List<string>>(){

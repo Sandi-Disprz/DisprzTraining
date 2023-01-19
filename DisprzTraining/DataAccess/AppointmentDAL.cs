@@ -16,7 +16,7 @@ namespace DisprzTraining.DataAccess
                 EventData.meetingData[date].Add(eventData);
                 EventData.meetingData[date]=EventData.meetingData[date]
                 .OrderBy(p=>p.StartTime).ToList();
-                if(eventData?.receiverMail?.Count>0){
+                if(eventData.receiverMail.Count>0){
                     SendMail(eventData.receiverMail,eventData);
                 }
                 
@@ -24,7 +24,7 @@ namespace DisprzTraining.DataAccess
             else{
                 temp.Add(eventData);
                 EventData.meetingData.Add(date,temp);
-                if(eventData?.receiverMail?.Count>0){
+                if(eventData.receiverMail.Count>0){
                     SendMail(eventData.receiverMail,eventData);
                 }
             } 
@@ -62,9 +62,7 @@ namespace DisprzTraining.DataAccess
                     }
                 }
             }
-            
-            return false;
-            
+            return false;    
         }
 
         public bool UpdateAppointment(string date, Appointment updateData)
@@ -81,6 +79,9 @@ namespace DisprzTraining.DataAccess
                         obj.EventDescription=updateData.EventDescription;
                         obj.receiverMail=updateData.receiverMail;
                         EventData.meetingData[date]=EventData.meetingData[date].OrderBy(p=>p.StartTime).ToList();
+                        // if(obj.receiverMail.Count>0){
+                        SendMail(obj.receiverMail,obj);
+                        // }
                         return true;
                     }
                     else if(obj.Id==updateData.Id && date.Equals(updateDate)==false){
@@ -133,7 +134,7 @@ namespace DisprzTraining.DataAccess
             email.From.Add(MailboxAddress.Parse(EventData.organizer));
             email.To.Add(MailboxAddress.Parse(EventData.organizer));
             email.Subject = "Remainder :  " + eventData.EventName;
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Plain) { Text = "You are invited to this event\n" +"Oragnizer:Santhosh Kumar s\n"+ eventData.EventName+"\n"+eventData.StartTime+ " - " + eventData.EndTime +"\n" +eventData.EventDescription };
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Text) { Text = "You are invited to this event\n" +"Oragnizer:Santhosh Kumar s\n"+ eventData.EventName+"\n"+eventData.StartTime+ " - " + eventData.EndTime +"\n" +eventData.EventDescription };
             using var smtp = new MailKit.Net.Smtp.SmtpClient();
             smtp.Connect("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
             smtp.Authenticate(EventData.organizer, EventData.password);

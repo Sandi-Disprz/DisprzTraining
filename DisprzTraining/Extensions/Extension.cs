@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 
 namespace DisprzTraining.Extensions
 {
-    public static class Extensions{
-        public static string GetDescription(this Enum e){
-        var attribute =
-                e?.GetType().GetTypeInfo()?.GetMember(e.ToString())?
-                .FirstOrDefault(member => member.MemberType == MemberTypes.Field)?
-                .GetCustomAttributes(typeof(DescriptionAttribute), false)
-                .SingleOrDefault()
-                as DescriptionAttribute;
-
-        return attribute?.Description?? e.ToString();
+    public static class Extensions
+    {
+        public static string GetDescription(this Enum enumerationValue)
+        {
+            Type type = enumerationValue.GetType();
+            //Tries to find a DescriptionAttribute for a potential friendly name
+            //for the enum
+            MemberInfo[] memberInfo = type.GetMember(enumerationValue.ToString());
+            object[] attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return ((DescriptionAttribute)attrs[0]).Description;
+               
+        }
     }
 }
-    }

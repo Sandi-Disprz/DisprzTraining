@@ -37,3 +37,5 @@ app.UseCors(conn=>conn.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://loc
 app.MapControllers();
 
 app.Run();
+
+public partial class Program{ }
