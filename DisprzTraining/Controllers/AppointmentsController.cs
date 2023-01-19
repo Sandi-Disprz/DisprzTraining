@@ -39,6 +39,8 @@ namespace DisprzTraining.Controllers
             }
         }
         [HttpGet("{date}")]
+        [ProducesResponseType(StatusCodes.Status200OK,Type=typeof(List<Appointment>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest,Type =typeof(Response))] 
         public IActionResult getAppointments(string date){
             try{
                 List<Appointment> targetData=_appointmentBL.RetriveAppointments(date);
@@ -49,6 +51,8 @@ namespace DisprzTraining.Controllers
             } 
         }
         [HttpDelete("{startTime}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest,Type =typeof(Response))]
         public IActionResult DeleteAppointment(DateTime startTime){
             DateTime st=startTime;
             string date=st.ToString("dd-MM-yyyy");
@@ -62,6 +66,9 @@ namespace DisprzTraining.Controllers
             }    
         }
         [HttpPut("{date}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest,Type =typeof(Response))]
         public IActionResult UpdateAppointment(string date,Appointment updateData){
             try{
                 bool IsUpdated=_appointmentBL.UpdateAppointment(date,updateData);
@@ -85,12 +92,16 @@ namespace DisprzTraining.Controllers
         }
 
         [HttpGet("holiday/{date}")]
+        [ProducesResponseType(StatusCodes.Status200OK ,Type =typeof(List<string>))]
         public  IActionResult GetHolidays(string date){
             List<string> holidayData=_appointmentBL.getHolidays(date);
             return Ok(holidayData);
         }
 
         [HttpGet("search")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Search([FromQuery]string search,[FromQuery]string type){
             try{
                 List<Appointment> FoundData=_appointmentBL.SearchEvents(search,type);
@@ -106,6 +117,7 @@ namespace DisprzTraining.Controllers
             } 
         }
         [HttpGet("range/{endRange}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult RangeEvents(DateTime endRange){
             List<Appointment> RangeData=_appointmentBL.EventsTimeRange(endRange);
             return Ok(RangeData);
