@@ -13,6 +13,7 @@ namespace DisprzTraining.Business
         public AppointmentBL(IAppointmentDAL appointmentDAL){
             _appointmentDAL=appointmentDAL;
         }
+        public DateTime current=new DateTime();
         public bool DateValidation(string[] checkDates){
             foreach(string date in checkDates){
                 if(DateTime.TryParseExact(date,EventData.formats,CultureInfo.InvariantCulture,
@@ -51,7 +52,12 @@ namespace DisprzTraining.Business
             string [] dates={date,tempSt.ToString(Format),tempEt.ToString(Format)};
             bool IsValidDate=DateValidation(dates);
             bool IsTimeConflict=TimeValidation(date,eventData);
-            return _appointmentDAL.CreateAppointment(date,eventData);   
+            if(eventData.StartTime>=DateTime.Now){
+                return _appointmentDAL.CreateAppointment(date,eventData);  
+            }
+            else{
+                throw new CustomExceptions.PastDateException();
+            } 
         }
 
         public List<Appointment> RetriveAppointments(string date)
@@ -114,6 +120,17 @@ namespace DisprzTraining.Business
         public List<Appointment> EventsTimeRange(DateTime endRange){
             
             return _appointmentDAL.EventsTimeRange(endRange);
+        }
+
+        public Appointment getAppointmentById(Guid id)
+        {
+            var responseData=_appointmentDAL.GetAppointmentById(id);
+            if(responseData.Count>0){
+                return responseData[0];
+            }
+            else{
+                throw new CustomExceptions.NotIdFoundException();
+            }
         }
     }
 }

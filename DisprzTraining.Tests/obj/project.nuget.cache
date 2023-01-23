@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "n3h2+gA4U6531GyWYVhWfJfgjgFNMmsLfHRmqi1ij8ljs/9fT573jP41toLJSbsM51u6kldcxuYRuKpeVAUfjQ==",
+  "dgSpecHash": "nUWbVcEWv2JUTGlM4uDa49NMkPvQyIPlbdIUKixQMR5DjHL4nanYM6qQwvF4fqlliHNUfcjVxLAfw4imwr46Ng==",
   "success": true,
-  "projectFilePath": "D:\\DisprzTraining\\DisprzTraining.Tests\\DisprzTraining.Tests.csproj",
+  "projectFilePath": "d:\\DisprzTraining\\DisprzTraining.Tests\\DisprzTraining.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\santhoshkumar.s_disp\\.nuget\\packages\\castle.core\\5.1.0\\castle.core.5.1.0.nupkg.sha512",
     "C:\\Users\\santhoshkumar.s_disp\\.nuget\\packages\\coverlet.collector\\3.1.2\\coverlet.collector.3.1.2.nupkg.sha512",

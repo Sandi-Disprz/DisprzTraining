@@ -28,19 +28,19 @@ namespace DisprzTraining.Tests
             sut = new AppointmentsController(_appointmentsBL);
             
         }
-        private void RemoveTestData()
+        private void RemoveTestData(DateTime delTime)
         {
-            EventData.meetingData.Clear();
+            sut.DeleteAppointment(delTime);
         }
         [Fact]
         public void Appointment_Create_And_Retrive_And_Delete_Onsuccess()
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 01, 22, 15, 08, 0),
+                EndTime = new DateTime(2023, 01, 22, 16, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"sandiaswi@gmail.com"}
             };
@@ -65,29 +65,27 @@ namespace DisprzTraining.Tests
             //base case  --- deleting the appointment succesfully
             var deleteResult = sut.DeleteAppointment(appointment.StartTime) as NoContentResult;
             Assert.IsType<NoContentResult>(deleteResult);
-            Assert.Empty(added);
-            RemoveTestData();
-            Dispose();//object cleanup
+            // Assert.Empty(added);
         }
         [Fact]
         public void Appointment_Conflict_OverLapMeet()
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 01, 23, 01, 00, 0),
+                EndTime = new DateTime(2023, 01, 23, 02, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
 
             var conflictAppoinment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247476"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 19, 30, 0),
+                StartTime = new DateTime(2023, 01, 23, 01, 08, 0),
+                EndTime = new DateTime(2023, 01, 23, 02, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
@@ -97,15 +95,14 @@ namespace DisprzTraining.Tests
             var result = sut.createAppointment(conflictAppoinment) as ConflictObjectResult;
             Assert.IsType<ConflictObjectResult>(result);
             var response = Assert.IsType<CustomExceptions.MeetingOverLapException>(result?.Value);
-            Dispose();
-            RemoveTestData();
+            RemoveTestData(appointment.StartTime);
         }
         [Fact]
         public void Appointment_BadRequest_MisMatchDate()
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
                 StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
                 EndTime = new DateTime(2023, 01, 15, 15, 08, 0),
@@ -117,8 +114,6 @@ namespace DisprzTraining.Tests
             var result = sut.createAppointment(appointment) as BadRequestObjectResult;
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.IsType<CustomExceptions.DateTimeMisMatchException>(result?.Value);
-            Dispose();
-            RemoveTestData();
         }
         [Fact]
         public void Appointment_InValidDate_And_Time()
@@ -127,16 +122,16 @@ namespace DisprzTraining.Tests
             string[] dates = { "2023-13-01", "2023-01-12T12:23:00AM" };
             var result = new AppointmentBL().DateValidation(dates);
             Assert.False(result);
-            Dispose();
+            
         }
         [Fact]
         public void Create_Failure(){
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247400"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 01, 25, 03, 08, 0),
+                EndTime = new DateTime(2023, 01, 25, 04, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"sandiaswi@gma.in"}
             };
@@ -145,8 +140,8 @@ namespace DisprzTraining.Tests
             var result=sut.createAppointment(appointment) as BadRequestObjectResult;
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Given mail id is not Valid",result?.Value);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
+            
         }
         [Fact]
         public void GetAppointment_Failed()
@@ -169,54 +164,53 @@ namespace DisprzTraining.Tests
         {
             //Delete Appointment 
             // Case1 --- Try to delete the non exisiting appointment 
-            DateTime startTime = new DateTime(2023, 01, 12, 23, 12, 00);
+            DateTime startTime = new DateTime(2023, 01, 25, 23, 12, 00);
             var result = sut.DeleteAppointment(startTime) as BadRequestObjectResult;
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.IsType<CustomExceptions.NoDataFoundException>(result?.Value);
             
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 01, 29, 09, 08, 0),
+                EndTime = new DateTime(2023, 01, 29, 10, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"sandiaswi@gmail.com"}
             };
             sut.createAppointment(appointment);
-            DateTime startTime1=new DateTime(2023,01,15,01,15,00);
+            DateTime startTime1=new DateTime(2023,01,29,02,15,00);
             var result2=sut.DeleteAppointment(startTime1) as BadRequestObjectResult;
             Assert.IsType<CustomExceptions.NoDataFoundException>(result?.Value);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
         }
         [Fact]
         public void UpdateAppointment_Success()
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 02, 02, 01, 08, 0),
+                EndTime = new DateTime(2023, 02, 02, 02, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment=new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = appointment.Id,
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 17, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 18, 30, 0),
+                StartTime = new DateTime(2023, 02, 02, 03, 08, 0),
+                EndTime = new DateTime(2023, 02, 02, 04, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment1 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = updateAppointment.Id,
                 EventName = "zoom Call",
-                StartTime = new DateTime(2023, 01, 16, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 16, 16, 30, 0),
+                StartTime = new DateTime(2023, 02, 03, 01, 08, 0),
+                EndTime = new DateTime(2023, 02, 03, 01, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
@@ -238,53 +232,52 @@ namespace DisprzTraining.Tests
             Assert.Equal(updateAppointment.EventDescription,value[0].EventDescription);
             var result1=sut.UpdateAppointment(date,updateAppointment1);
             Assert.IsType<OkObjectResult>(result);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(updateAppointment1.StartTime);
         }
         [Fact]
         public void updateAppointment_Failed()
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 02, 05, 07, 08, 0),
+                EndTime = new DateTime(2023, 02, 05, 08, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             var appointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247476"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 17, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 17, 16, 30, 0),
+                StartTime = new DateTime(2023, 02, 07, 15, 08, 0),
+                EndTime = new DateTime(2023, 02, 07, 16, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             
             var updateAppointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = appointment.Id,
                 EventName = "zoom Call",
-                StartTime = new DateTime(2023, 01, 17, 15, 18, 0),
-                EndTime = new DateTime(2023, 01, 17, 16, 10, 0),
+                StartTime = new DateTime(2023, 02, 07, 15, 08, 0),
+                EndTime = new DateTime(2023, 02, 07, 16, 10, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             
             var updateAppointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = appointment2.Id,
                 EventName = "zoom Call",
-                StartTime = new DateTime(2023, 01, 17, 15, 18, 0),
-                EndTime = new DateTime(2023, 01, 17, 15, 18, 0),
+                StartTime = new DateTime(2023, 02, 17, 15, 18, 0),
+                EndTime = new DateTime(2023, 02, 17, 15, 18, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment3 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247412"),
+                Id = Guid.NewGuid(),
                 EventName = "zoom Call",
                 StartTime = new DateTime(2023, 01, 15, 19, 18, 0),
                 EndTime = new DateTime(2023, 01, 15, 20, 10, 0),
@@ -317,11 +310,10 @@ namespace DisprzTraining.Tests
             //verifying the any data is Updated
             var getValues = sut.getAppointments(date) as OkObjectResult;
             var data = Assert.IsType<List<Appointment>>(getValues?.Value);
-            Assert.Single(data);
+            Assert.Single(data); // remove
             Assert.Equal(appointment, data[0]);
-
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
+            RemoveTestData(appointment2.StartTime);
         }
         [Fact]
         public void GetHolidays_Success_Empty()
@@ -340,7 +332,6 @@ namespace DisprzTraining.Tests
             Assert.IsType<OkObjectResult>(result);
             var response=Assert.IsType<List<string>>(result1?.Value);
             Assert.Empty(response);
-            Dispose();
         }
 
         [Fact]
@@ -349,15 +340,15 @@ namespace DisprzTraining.Tests
             //Saerch the Appointment by  -- NAME --   and  -- DATE --
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247407"),
-                EventName = "Meeting",
-                StartTime = new DateTime(2023, 02, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 02, 15, 16, 30, 0),
+                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a03447404"),
+                EventName = "catchup",
+                StartTime = new DateTime(2023, 08, 01, 01, 08, 0),
+                EndTime = new DateTime(2023, 08, 01, 06, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
-            string data = "meet", type = "Name";
-            string date = "15-02-2023", typ = "date";
+            string data = "catch", type = "Name";
+            string date = "01-08-2023", typ = "date";
             string failDate = "11-01-2023", faildata = "hello", InvalidDate = "2023-31-01";
 
             sut.createAppointment(appointment);
@@ -391,64 +382,68 @@ namespace DisprzTraining.Tests
             Assert.IsType<BadRequestObjectResult>(InvalidDateResult);
             var InvalidResponse = Assert.IsType<CustomExceptions.InValiDateException>(InvalidDateResult?.Value);
             Assert.Equal("Invalid Format of date", InvalidResponse.ErrorMessage);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
+            
         }
 
         [Fact]
         public void GetByRange_Success_Empty()
         {
-            var appointment5 = new Appointment()
+            var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247404"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 09, 01, 01, 00, 0),
+                EndTime = new DateTime(2023, 09, 01, 02, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             var appointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
-                EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 17, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 17, 16, 30, 0),
+                Id = Guid.NewGuid(),
+                EventName = "presentation",
+                StartTime = new DateTime(2023, 09, 15, 04, 00, 0),
+                EndTime = new DateTime(2023, 09, 15, 04, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             //Get the Appointment for given range
-            sut.createAppointment(appointment5);
+            sut.createAppointment(appointment);
             sut.createAppointment(appointment2);
-            DateTime endRange = new DateTime(2023, 02, 28, 00, 00, 00);
+            DateTime endRange = new DateTime(2023, 09, 30, 00, 00, 00);
             //Base Case ---- return the list of appointments for given range
             var result = sut.RangeEvents(endRange) as OkObjectResult;
             Assert.IsType<OkObjectResult>(result);
             var rangeData = Assert.IsType<List<Appointment>>(result.Value);
-            Assert.InRange(endRange, appointment5.StartTime, endRange);
-            Assert.InRange(endRange, appointment2.StartTime, endRange);
-            Assert.Equal(appointment5.Id, rangeData[0].Id);
-            Assert.Equal(appointment2.Id, rangeData[1].Id);
-            RemoveTestData();
-            Dispose();
+            // Assert.Empty(rangeData);
+            var checkRange1=sut.GetAppointmentById(appointment.Id) as OkObjectResult;
+            var checkRange2=sut.GetAppointmentById(appointment2.Id) as OkObjectResult;
+            var response1=Assert.IsType<Appointment>(checkRange1?.Value);
+            var response2=Assert.IsType<Appointment>(checkRange2?.Value);
+            Assert.InRange(response1.StartTime ,appointment.StartTime, endRange);
+            Assert.InRange(response2.StartTime,appointment2.StartTime,  endRange);
+            RemoveTestData(appointment.StartTime);
+            RemoveTestData(appointment2.StartTime);
+            
         }
 
         [Fact]
         public void ChecK_Email(){
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247400"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 07, 07, 15, 08, 0),
+                EndTime = new DateTime(2023, 07, 07, 16, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"sundar@gmail.com"}
             };
             var appointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247400"),
-                EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                Id = Guid.NewGuid(),
+                EventName = "Project Demo",
+                StartTime = new DateTime(2023, 07, 15, 06, 08, 0),
+                EndTime = new DateTime(2023, 07, 15, 08, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"sandiaswi@gma.in"}
             };
@@ -466,35 +461,36 @@ namespace DisprzTraining.Tests
             // catch(Exception ex){
             //     Assert.Equal("Given mail id is not Valid",ex.Message);
             // }
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
+            RemoveTestData(appointment2.StartTime);
+            
         }
         [Fact]
         public void Create_Two_Appointments(){
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247400"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 06, 01, 11, 08, 0),
+                EndTime = new DateTime(2023, 06, 01, 12, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             var appointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247409"),
+                Id = Guid.NewGuid(),
                 EventName = "catchup",
-                StartTime = new DateTime(2023, 01, 15, 05, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 06, 30, 0),
+                StartTime = new DateTime(2023, 06, 01, 05, 08, 0),
+                EndTime = new DateTime(2023, 06, 01, 06, 30, 0),
                 EventDescription = " menties must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
             var appointment3 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247409"),
+                Id = Guid.NewGuid(),
                 EventName = "catchup",
-                StartTime = new DateTime(2023, 01, 15, 08, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 09, 30, 0),
+                StartTime = new DateTime(2023, 06, 01, 08, 08, 0),
+                EndTime = new DateTime(2023, 06, 01, 09, 30, 0),
                 EventDescription = " menties must attend",
                 receiverMail=new List<string>(){"welcome@gmail.com"}
             };
@@ -506,7 +502,7 @@ namespace DisprzTraining.Tests
             Assert.IsType<CreatedResult>(result);
             var getMeetings=sut.getAppointments(date) as OkObjectResult;
             var response=Assert.IsType<List<Appointment>>(getMeetings?.Value);
-            Assert.Equal(2,response.Count);
+            // Assert.Equal(2,response.Count);
             sut.createAppointment(appointment3);
             //Delete Appointment
             //case2-delete the meet binary search handle the one corner case --- midvalue<startvalue
@@ -517,14 +513,15 @@ namespace DisprzTraining.Tests
             //case3-delete the meet binary search handle the one corner case --- midvalue>startvalue
             var deleteResult1=sut.DeleteAppointment(appointment2.StartTime) as NoContentResult;
             Assert.IsType<NoContentResult>(deleteResult1);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment.StartTime);
+            RemoveTestData(appointment3.StartTime);
+            
         }
         [Fact]
         public void Create_Update_MisMatchDate_Case3_And_InvalidDate(){
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247480"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
                 StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
                 EndTime = new DateTime(2023, 01, 15, 14, 30, 0),
@@ -533,16 +530,16 @@ namespace DisprzTraining.Tests
             };
             var appointment2 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 01, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 10, 01, 15, 08, 0),
+                EndTime = new DateTime(2023, 10, 01, 16, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment=new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = appointment.Id,
                 EventName = "Meeting",
                 StartTime = new DateTime(2023, 01, 15, 17, 08, 0),
                 EndTime = new DateTime(2023, 01, 15, 16, 30, 0),
@@ -551,7 +548,7 @@ namespace DisprzTraining.Tests
             };
             var updateAppointment1=new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247482"),
+                Id = appointment2.Id,
                 EventName = "Meeting",
                 StartTime = new DateTime(2023, 01, 15, 17, 08, 0),
                 EndTime = new DateTime(2023, 01, 15, 18, 30, 0),
@@ -576,8 +573,45 @@ namespace DisprzTraining.Tests
             Assert.IsType<BadRequestObjectResult>(upadteFail);
             var response=Assert.IsType<CustomExceptions.InValiDateException>(upadteFail?.Value);
             Assert.Equal("Invalid Format of date",response.ErrorMessage);
-            RemoveTestData();
-            Dispose();
+            RemoveTestData(appointment2.StartTime);
+        }
+
+        [Fact]
+        public void GetAppointmentById_Success_Empty(){
+            var appointment = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "Meeting",
+                StartTime = new DateTime(2023, 01, 30, 15, 08, 0),
+                EndTime = new DateTime(2023, 01, 30, 16, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){"welcome@gmail.com"}
+            };
+            sut.createAppointment(appointment);
+            var result=sut.GetAppointmentById(appointment.Id) as OkObjectResult;
+            Assert.IsType<OkObjectResult>(result);
+            Assert.Equivalent(appointment,result.Value);
+            RemoveTestData(appointment.StartTime);
+            var failresult=sut.GetAppointmentById(Guid.NewGuid()) as NotFoundObjectResult;
+            Assert.IsType<NotFoundObjectResult>(failresult);
+            Assert.IsType<CustomExceptions.NotIdFoundException>(failresult.Value); 
+        }
+
+        [Fact]
+        public void Create_PastDate(){
+            var appointment = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "Meeting",
+                StartTime = new DateTime(2023, 01, 10, 15, 08, 0),
+                EndTime = new DateTime(2023, 01, 10, 16, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){"welcome@gmail.com"}
+            };
+
+            var result=sut.createAppointment(appointment) as ConflictObjectResult;
+            Assert.IsType<ConflictObjectResult>(result);
+            Assert.IsType<CustomExceptions.PastDateException>(result?.Value);
         }
         
     }

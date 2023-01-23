@@ -85,11 +85,11 @@ namespace DisprzTraining.DataAccess
                         return true;
                     }
                     else if(obj.Id==updateData.Id && date.Equals(updateDate)==false){
+                        CreateAppointment(updateDate,updateData);
                         EventData.meetingData[date].Remove(obj);
                         if(EventData.meetingData[date].Count==0){
                             EventData.meetingData.Remove(date);
                         }
-                        CreateAppointment(updateDate,updateData);
                         return true;
                     }
                 }
@@ -151,5 +151,28 @@ namespace DisprzTraining.DataAccess
             smtp.Disconnect(true);
             return true;
         }
+
+
+        public List<Appointment> GetAppointmentById(Guid id){
+            var responseData=EventData.meetingData.SelectMany(meet=>meet.Value)
+                    .Where(meet=>meet.Id==id)
+                    .Select(meet=>new Appointment
+                    {EventName= meet.EventName,StartTime= meet.StartTime,EndTime= meet.EndTime,
+                    EventDescription= meet.EventDescription,Id=meet.Id,receiverMail=meet.receiverMail}).ToList();
+            return responseData;
+        }
+        /*
+        public bool deleteAppointment(string date,Guid id){
+            if(EventData.meetingData.ContainsKey(date)){
+                foreach(Appointment obj in EventData.meetingData[date]){
+                    if(obj.Id==id){
+                        EventData.meetingData[date].remove(obj);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        */
     }
 }

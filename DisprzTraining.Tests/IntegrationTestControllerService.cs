@@ -1,5 +1,3 @@
-
-using Xunit;
 using Microsoft.AspNetCore.Mvc.Testing;
 using DisprzTraining.Data;
 using DisprzTraining.Models;
@@ -7,8 +5,6 @@ using System.Net.Http.Json;
 using Newtonsoft.Json;
 using System.Text;
 using System.Net;
-using System.Collections.Generic;
-using DisprzTraining.CustomExceptions;
 namespace DisprzTraining.Tests
 {
     public class IntegrationTestControllerService:IClassFixture<WebApplicationFactory<Program>>
@@ -20,9 +16,9 @@ namespace DisprzTraining.Tests
             _client=integrationTest.CreateClient();
         }
 
-        private void RemoveTestData()
+        private void RemoveTestData(DateTime delTime)
         {
-            EventData.meetingData.Clear();
+            _client.DeleteAsync($"{URL}/{delTime}");
         }
         private StringContent format(Appointment data){
             var serializeObject = JsonConvert.SerializeObject(data);
@@ -34,10 +30,10 @@ namespace DisprzTraining.Tests
         {
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247462"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 02, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 02, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 11, 01, 01, 00, 0),
+                EndTime = new DateTime(2023, 11, 01, 02, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
@@ -50,7 +46,7 @@ namespace DisprzTraining.Tests
             response?.Content?.Headers?.ContentType?.ToString());
 
             //Get Appointment
-            var getResponse=await _client.GetAsync("api/appointments/15-02-2023");
+            var getResponse=await _client.GetAsync("api/appointments/01-11-2023");
             getResponse.EnsureSuccessStatusCode();
             Assert.Equal(HttpStatusCode.OK,getResponse.StatusCode);
             Assert.Equal("application/json; charset=utf-8", 
@@ -61,10 +57,10 @@ namespace DisprzTraining.Tests
             Assert.Equal(appointment.Id,ResponseValue[0].Id);
 
             //Delete Appointment
-            var deleteResponse=await _client.DeleteAsync("api/appointments/2023-02-15T15:08:00") ;
+            var deleteResponse=await _client.DeleteAsync("api/appointments/2023-11-01T01:00:00") ;
             deleteResponse.EnsureSuccessStatusCode();
             Assert.Equal(HttpStatusCode.NoContent,deleteResponse.StatusCode);
-            var check=await _client.GetAsync("api/appointments/15-01-2023");
+            var check=await _client.GetAsync("api/appointments/01-11-2023");
             check.EnsureSuccessStatusCode();
             Assert.Empty(check.Content.ReadFromJsonAsync<List<Appointment>>().Result);
         }
@@ -73,28 +69,28 @@ namespace DisprzTraining.Tests
         public async Task Update_SUCCESS(){
             var appointment = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247492"),
+                Id = Guid.NewGuid(),
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 02, 15, 15, 08, 0),
-                EndTime = new DateTime(2023, 02, 15, 16, 30, 0),
+                StartTime = new DateTime(2023, 11, 05, 02, 08, 0),
+                EndTime = new DateTime(2023, 11, 05, 06, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment=new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247492"),
+                Id = appointment.Id,
                 EventName = "Meeting",
-                StartTime = new DateTime(2023, 02, 15, 17, 08, 0),
-                EndTime = new DateTime(2023, 02, 15, 18, 30, 0),
+                StartTime = new DateTime(2023, 11, 05, 07, 08, 0),
+                EndTime = new DateTime(2023, 11, 05, 08, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
             var updateAppointment1 = new Appointment()
             {
-                Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247492"),
+                Id = updateAppointment.Id,
                 EventName = "zoom Call",
-                StartTime = new DateTime(2023, 02, 16, 15, 08, 0),
-                EndTime = new DateTime(2023, 02, 16, 16, 30, 0),
+                StartTime = new DateTime(2023, 11, 06, 15, 08, 0),
+                EndTime = new DateTime(2023, 11, 06, 16, 30, 0),
                 EventDescription = "must attend",
                 receiverMail=new List<string>(){}
             };
@@ -116,98 +112,99 @@ namespace DisprzTraining.Tests
             result2.EnsureSuccessStatusCode();
             Assert.Equal(HttpStatusCode.OK,result2.StatusCode);
             Assert.Equivalent(updateAppointment1,updatedResponse2.Content.ReadFromJsonAsync<List<Appointment>>().Result[0]);
-            RemoveTestData();
+            RemoveTestData(updateAppointment1.StartTime);
         }
-        // [Fact]
-        // public async Task Update_Failed(){
-        //     var appointment = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247455"),
-        //         EventName = "Meeting",
-        //         StartTime = new DateTime(2023, 03, 15, 15, 08, 0),
-        //         EndTime = new DateTime(2023, 03, 15, 16, 30, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){"welcome@gmail.com"}
-        //     };
-        //     var appointment2 = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247433"),
-        //         EventName = "Meeting",
-        //         StartTime = new DateTime(2023, 03, 17, 15, 08, 0),
-        //         EndTime = new DateTime(2023, 03, 17, 16, 30, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){"welcome@gmail.com"}
-        //     };
+        [Fact]
+        public async Task Update_Failed(){
+            var appointment = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "Meeting",
+                StartTime = new DateTime(2023, 11, 10, 01, 08, 0),
+                EndTime = new DateTime(2023, 11, 10, 02, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){"welcome@gmail.com"}
+            };
+            var appointment2 = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "Meeting",
+                StartTime = new DateTime(2023, 11, 11, 15, 08, 0),
+                EndTime = new DateTime(2023, 11, 11, 16, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){"welcome@gmail.com"}
+            };
             
-        //     var updateAppointment = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247455"),
-        //         EventName = "zoom Call",
-        //         StartTime = new DateTime(2023, 03, 17, 15, 18, 0),
-        //         EndTime = new DateTime(2023, 03, 17, 16, 10, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){}
-        //     };
+            var updateAppointment = new Appointment()
+            {
+                Id = appointment.Id,
+                EventName = "zoom Call",
+                StartTime = new DateTime(2023, 11, 11, 15, 18, 0),
+                EndTime = new DateTime(2023, 11, 11, 16, 10, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){}
+            };
             
-        //     var updateAppointment2 = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247455"),
-        //         EventName = "zoom Call",
-        //         StartTime = new DateTime(2023, 03, 17, 15, 18, 0),
-        //         EndTime = new DateTime(2023, 03, 17, 15, 18, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){}
-        //     };
-        //     var updateAppointment3=new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247455"),
-        //         EventName = "Meeting",
-        //         StartTime = new DateTime(2023, 03, 15, 17, 08, 0),
-        //         EndTime = new DateTime(2023, 03, 15, 16, 30, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){}
-        //     };
-        //     var updateAppointment4 = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247412"),
-        //         EventName = "zoom Call",
-        //         StartTime = new DateTime(2023, 03, 15, 19, 18, 0),
-        //         EndTime = new DateTime(2023, 03, 15, 20, 10, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){}
-        //     };
+            var updateAppointment2 = new Appointment()
+            {
+                Id = appointment2.Id,
+                EventName = "zoom Call",
+                StartTime = new DateTime(2023, 03, 17, 15, 18, 0),
+                EndTime = new DateTime(2023, 03, 17, 15, 18, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){}
+            };
+            var updateAppointment3=new Appointment()
+            {
+                Id = appointment2.Id,
+                EventName = "Meeting",
+                StartTime = new DateTime(2023, 03, 15, 17, 08, 0),
+                EndTime = new DateTime(2023, 03, 15, 16, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){}
+            };
+            var updateAppointment4 = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "zoom Call",
+                StartTime = new DateTime(2023, 03, 15, 19, 18, 0),
+                EndTime = new DateTime(2023, 03, 15, 20, 10, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){}
+            };
 
-        //     string date = appointment.StartTime.ToString("dd-MM-yyyy");
-        //     string update = updateAppointment.StartTime.ToString("dd-MM-yyyy");
-        //     var stringContent=format(appointment);
-        //     var stringContent2=format(appointment2);
-        //     await _client.PostAsync(URL,stringContent);
-        //     await _client.PostAsync(URL,stringContent2);
-        //     var updateContent=format(updateAppointment);
-        //     var overLapUpdate=await _client.PutAsync($"{URL}/{date}",updateContent);
-        //     Assert.Equal(HttpStatusCode.Conflict,overLapUpdate.StatusCode);
-        //     var responseMessage=Assert.IsType<CustomExceptions.MeetingOverLapException>(overLapUpdate.Content.ReadFromJsonAsync<CustomExceptions.MeetingOverLapException>().Result);
-        //     Assert.Equivalent(new CustomExceptions.MeetingOverLapException{StatusCode=409,ErrorMessage="Already Meeting is there"},responseMessage);
+            string date = appointment.StartTime.ToString("dd-MM-yyyy");
+            string update = updateAppointment.StartTime.ToString("dd-MM-yyyy");
+            var stringContent=format(appointment);
+            var stringContent2=format(appointment2);
+            await _client.PostAsync(URL,stringContent);
+            await _client.PostAsync(URL,stringContent2);
+            var updateContent=format(updateAppointment);
+            var overLapUpdate=await _client.PutAsync($"{URL}/{date}",updateContent);
+            Assert.Equal(HttpStatusCode.Conflict,overLapUpdate.StatusCode);
+            var responseMessage=Assert.IsType<CustomExceptions.MeetingOverLapException>(overLapUpdate.Content.ReadFromJsonAsync<CustomExceptions.MeetingOverLapException>().Result);
+            Assert.Equivalent(new CustomExceptions.MeetingOverLapException{StatusCode=409,ErrorMessage="Already Meeting is there"},responseMessage);
 
-        //     var updateContent2=format(updateAppointment2);
-        //     var mismatchResult=await _client.PutAsync($"{URL}/{date}",updateContent2);
-        //     Assert.Equal(HttpStatusCode.BadRequest,mismatchResult.StatusCode);
-        //     var responseMessage2=Assert.IsType<CustomExceptions.DateTimeMisMatchException>(mismatchResult.Content.ReadFromJsonAsync<CustomExceptions.DateTimeMisMatchException>().Result);
-        //     Assert.Equivalent(new CustomExceptions.DateTimeMisMatchException{StatusCode=400,ErrorMessage="Given EndTime is not greater than the StartTime"},responseMessage2);
+            var updateContent2=format(updateAppointment2);
+            var mismatchResult=await _client.PutAsync($"{URL}/{date}",updateContent2);
+            Assert.Equal(HttpStatusCode.BadRequest,mismatchResult.StatusCode);
+            var responseMessage2=Assert.IsType<CustomExceptions.DateTimeMisMatchException>(mismatchResult.Content.ReadFromJsonAsync<CustomExceptions.DateTimeMisMatchException>().Result);
+            Assert.Equivalent(new CustomExceptions.DateTimeMisMatchException{StatusCode=400,ErrorMessage="Given EndTime is not greater than the StartTime"},responseMessage2);
 
-        //     var updateContent3=format(updateAppointment3);
-        //     var mismatchResult2=await _client.PutAsync($"{URL}/{date}",updateContent3);
-        //     Assert.Equal(HttpStatusCode.BadRequest,mismatchResult2.StatusCode);
-        //     var responseMessage3=Assert.IsType<CustomExceptions.DateTimeMisMatchException>(mismatchResult2.Content.ReadFromJsonAsync<CustomExceptions.DateTimeMisMatchException>().Result);
-        //     Assert.Equivalent(new CustomExceptions.DateTimeMisMatchException{StatusCode=400,ErrorMessage="Given EndTime is not greater than the StartTime"},responseMessage3);
+            var updateContent3=format(updateAppointment3);
+            var mismatchResult2=await _client.PutAsync($"{URL}/{date}",updateContent3);
+            Assert.Equal(HttpStatusCode.BadRequest,mismatchResult2.StatusCode);
+            var responseMessage3=Assert.IsType<CustomExceptions.DateTimeMisMatchException>(mismatchResult2.Content.ReadFromJsonAsync<CustomExceptions.DateTimeMisMatchException>().Result);
+            Assert.Equivalent(new CustomExceptions.DateTimeMisMatchException{StatusCode=400,ErrorMessage="Given EndTime is not greater than the StartTime"},responseMessage3);
 
-        //     var updateContent4=format(updateAppointment4);
-        //     var IdNotFoundResult=await _client.PutAsync($"{URL}/{date}",updateContent4);
-        //     Assert.Equal(HttpStatusCode.BadRequest,IdNotFoundResult.StatusCode);
-        //     var responseMessage4=Assert.IsType<CustomExceptions.NotIdFoundException>(IdNotFoundResult.Content.ReadFromJsonAsync<CustomExceptions.NotIdFoundException>().Result);
-        //     Assert.Equivalent(new CustomExceptions.NotIdFoundException{StatusCode=400,ErrorMessage="Meeting ID is not found"},responseMessage4);
-        //     RemoveTestData();
-        // }
+            var updateContent4=format(updateAppointment4);
+            var IdNotFoundResult=await _client.PutAsync($"{URL}/{date}",updateContent4);
+            Assert.Equal(HttpStatusCode.BadRequest,IdNotFoundResult.StatusCode);
+            var responseMessage4=Assert.IsType<CustomExceptions.NotIdFoundException>(IdNotFoundResult.Content.ReadFromJsonAsync<CustomExceptions.NotIdFoundException>().Result);
+            Assert.Equivalent(new CustomExceptions.NotIdFoundException{StatusCode=400,ErrorMessage="Meeting ID is not found"},responseMessage4);
+            await _client.DeleteAsync($"{URL}/{appointment.StartTime}");
+            await _client.DeleteAsync($"{URL}/{appointment2.StartTime}");
+        }
         [Fact]
         public async Task GetHolidays(){
             string success_date="01-01-2023";
@@ -226,31 +223,31 @@ namespace DisprzTraining.Tests
             Assert.Empty(result2.Content.ReadFromJsonAsync<List<string>>().Result);
         }
 
-        // [Fact]
-        // public async Task Search_Success_Failure(){
-        //     //Saerch the Appointment by  -- NAME --   and  -- DATE --
-        //     var appointment = new Appointment()
-        //     {
-        //         Id = new Guid("9245fe4a-d402-451c-b9ed-9c1a04247407"),
-        //         EventName = "Meeting",
-        //         StartTime = new DateTime(2023, 02, 19, 15, 08, 0),
-        //         EndTime = new DateTime(2023, 02, 19, 16, 30, 0),
-        //         EventDescription = "must attend",
-        //         receiverMail=new List<string>(){"welcome@gmail.com"}
-        //     };
-        //     string data = "meet", type = "Name";
-        //     string date = "15-02-2023", typ = "date";
-        //     string failDate = "11-01-2023", faildata = "hello", InvalidDate = "2023-31-01";
-        //     var stringContent=format(appointment);
-        //     await _client.PostAsync(URL,stringContent);
-        //     var result=await _client.GetAsync($"{URL}/search?search={data}&type={type}");
-        //     result.EnsureSuccessStatusCode();
-        //     // Assert.Equal("application/json; charset=utf-8", 
-        //     // result?.Content?.Headers?.ContentType?.ToString());
-        //     Assert.Equal(HttpStatusCode.OK,result.StatusCode);
-        //     // Assert.Equivalent(appointment.Id,result.Content.ReadFromJsonAsync<List<Appointment>>().Result[0].Id);
-        //     RemoveTestData();
-        //     result.Dispose();
-        // }
+        [Fact]
+        public async Task Search_Success_Failure(){
+            //Saerch the Appointment by  -- NAME --   and  -- DATE --
+            var appointment = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                EventName = "CIP Review",
+                StartTime = new DateTime(2023, 12, 01, 15, 08, 0),
+                EndTime = new DateTime(2023, 12, 01, 16, 30, 0),
+                EventDescription = "must attend",
+                receiverMail=new List<string>(){"welcome@gmail.com"}
+            };
+            string data = "Review", type = "Name";
+            string date = "01-12-2023", typ = "date";
+            string failDate = "12-12-2023", faildata = "hello", InvalidDate = "2023-31-01";
+            var stringContent=format(appointment);
+            await _client.PostAsync(URL,stringContent);
+            var result=await _client.GetAsync($"{URL}/search?search={data}&type={type}");
+            result.EnsureSuccessStatusCode();
+            Assert.Equal("application/json; charset=utf-8", 
+            result?.Content?.Headers?.ContentType?.ToString());
+            Assert.Equal(HttpStatusCode.OK,result.StatusCode);
+            // Assert.Equivalent(appointment.Id,result.Content.ReadFromJsonAsync<List<Appointment>>().Result[0].Id);
+            RemoveTestData(appointment.StartTime);
+            
+        }
     }
 }

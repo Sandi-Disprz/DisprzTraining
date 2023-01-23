@@ -26,4 +26,8 @@ namespace DisprzTraining.CustomExceptions
     public class InValiDateException:ApplicationException{
         public string? ErrorMessage{get;set;}
     }
+    public class PastDateException:ApplicationException{
+        public int?StatusCode{get;set;}
+        public string? ErrorMessage{get;set;}
+    }
 }

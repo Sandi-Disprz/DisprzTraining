@@ -34,6 +34,9 @@ namespace DisprzTraining.Controllers
              catch(CustomExceptions.MeetingOverLapException){
                 return Conflict(new CustomExceptions.MeetingOverLapException(){StatusCode=(int)Statuscodes.ReturnCodeConflict,ErrorMessage=ResponseMessage.DateTimeOverLap.GetDescription()});
             }
+            catch(CustomExceptions.PastDateException){
+                return Conflict(new CustomExceptions.PastDateException(){StatusCode=(int)Statuscodes.ReturnCodeConflict,ErrorMessage="Meeting can't to be added in the past time"});
+            }
             catch(Exception ex){
                 return BadRequest(ex.Message);
             }
@@ -121,6 +124,19 @@ namespace DisprzTraining.Controllers
         public IActionResult RangeEvents(DateTime endRange){
             List<Appointment> RangeData=_appointmentBL.EventsTimeRange(endRange);
             return Ok(RangeData);
+        }
+
+        [HttpGet("id/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type =typeof(Response))]
+        public IActionResult GetAppointmentById(Guid id){
+            try{
+                Appointment eventData=_appointmentBL.getAppointmentById(id);
+                return Ok(eventData);
+            }
+            catch(CustomExceptions.NotIdFoundException){
+                return NotFound(new CustomExceptions.NotIdFoundException(){StatusCode=(int)Statuscodes.ReturnCodeNotFound , ErrorMessage=ResponseMessage.IdNotFound.GetDescription()});
+            }
         }
     }
 }
